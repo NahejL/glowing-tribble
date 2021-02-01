@@ -1,45 +1,89 @@
+mod game;
+use game::Game;
+
+mod systems;
+
 use amethyst::{
-    core::transform::TransformBundle,
-    input::{InputBundle, StringBindings},
-    prelude::*,
-    renderer::{
-        plugins::{RenderFlat2D, RenderToWindow},
-        types::DefaultBackend,
-        RenderingBundle,
-    },
-    ui::{RenderUi, UiBundle},
-    utils::application_root_dir,
+  prelude::*,
+  renderer::{
+    plugins::{ RenderFlat2D, RenderToWindow },
+    types::DefaultBackend,
+    RenderingBundle
+  },
+  utils::application_root_dir,
+  core::transform::TransformBundle,
+  config::ConfigError,
+  error::Error,
+  input::{ InputBundle, StringBindings },
+  ui::{ RenderUi, UiBundle },
 };
 
-mod state;
-
 fn main() -> amethyst::Result<()> {
-    amethyst::start_logger(Default::default());
+  // #region init logger
+  amethyst::start_logger( Default::default() );
+  // #endregion 
+  // #region application setup
+  { 
 
     let app_root = application_root_dir()?;
+    let asset_dir = app_root.join( "assets" );
+    let game_data = (|| -> Result< GameDataBuilder, Error > {
 
-    let resources = app_root.join("assets");
-    let display_config = app_root.join("config/display_config.ron");
-    let key_bindings_path = app_root.join("config/input.ron");
+      let rendering_bundle = (|| -> Result< RenderingBundle< DefaultBackend >, ConfigError > {
+    
+        let window_plugin = RenderToWindow::from_config_path( app_root.join( "config" ).join( "display.ron" ) )?
+        .with_clear([ 0.0, 0.0, 0.0, 1.0 ]) ;
 
-    let game_data = GameDataBuilder::default()
-        .with_bundle(TransformBundle::new())?
-        .with_bundle(
-            InputBundle::<StringBindings>::new().with_bindings_from_file(&key_bindings_path)?,
-        )?
-        .with_bundle(UiBundle::<StringBindings>::new())?
-        .with_bundle(
-            RenderingBundle::<DefaultBackend>::new()
-                .with_plugin(
-                    RenderToWindow::from_config_path(display_config)?
-                        .with_clear([0.34, 0.36, 0.52, 1.0]),
-                )
-                .with_plugin(RenderUi::default())
-                .with_plugin(RenderFlat2D::default()),
-        )?;
+        let flat_plugin = RenderFlat2D::default();
 
-    let mut game = Application::new(resources, state::MyState, game_data)?;
+        return Ok( RenderingBundle::< DefaultBackend >::new()
+        .with_plugin( RenderUi::default() )
+        .with_plugin( window_plugin )
+        .with_plugin( flat_plugin ) );
+      })()?;
+
+      let transform_bundle = TransformBundle::new();
+
+      let ( input_bundle, ui_bundle ) = {
+
+        type BINDINGS = StringBindings;
+        
+        let input_bundle = {
+      
+          let bindings_path = app_root.join( "config" ).join( "bindings.ron" );
+        
+          InputBundle::< BINDINGS >::new()
+          .with_bindings_from_file( bindings_path )?
+        };
+
+        let ui_bundle = UiBundle::< BINDINGS >::new();
+
+        ( input_bundle, ui_bundle )
+      };
+
+      return Ok( 
+        GameDataBuilder::default()
+        .with_bundle( rendering_bundle )?
+        .with_bundle( transform_bundle )?
+        .with_bundle( input_bundle )?
+        .with_bundle( ui_bundle )?
+        .with( systems::PaddleSystem, "paddle_system", &[ "input_system" ] )
+        .with( systems::BallSystem, "ball_system", &[] )
+        .with( systems::CollisionSystem, "collision_system", &[ "paddle_system", "ball_system"]) 
+        .with( systems::WinningSystem, "winning_system", &[ "ball_system" ])
+      );
+    })()?;
+
+    let mut game = Application::new( 
+      asset_dir, 
+      Game::default(), 
+      game_data 
+    )?; 
+
     game.run();
+  } 
+  // #endregion
 
-    Ok(())
+
+  Ok(())
 }
