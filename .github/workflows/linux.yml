@@ -22,7 +22,7 @@ jobs:
         ]
         channel: [ nightly ]
         cfg-release-channel: [
-          # beta,
+          beta,
           # Running `/home/runner/work/glowing-tribble/glowing-tribble/target/debug/build/gfx-backend-metal-d4893cfd003cd631/build-script-build`
           # error: failed to run custom build command for `gfx-backend-metal v0.3.3`
           # Caused by:
