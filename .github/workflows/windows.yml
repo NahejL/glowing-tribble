@@ -18,10 +18,38 @@ jobs:
       fail-fast: false
       matrix:
         target: [
-          i686-pc-windows-gnu,
-          i686-pc-windows-msvc,
-          x86_64-pc-windows-gnu,
-          x86_64-pc-windows-msvc,
+          # i686-pc-windows-gnu,
+          # Running `D:\a\glowing-tribble\glowing-tribble\target\debug\build\gfx-backend-metal-34b8e8cb0833ebeb\build-script-build`
+          # error: failed to run custom build command for `gfx-backend-metal v0.3.3`
+          # Caused by:
+          #   process didn't exit successfully: `D:\a\glowing-tribble\glowing-tribble\target\debug\build\gfx-backend-metal-34b8e8cb0833ebeb\build-script-build` (exit code: 101)
+          #   --- stderr
+          # thread 'main' panicked at 'unsupported target i686-pc-windows-gnu', C:\Users\runneradmin\.cargo\registry\src\github.com-1285ae84e5963aae\gfx-backend-metal-0.3.3\build.rs:17:9
+          
+          # i686-pc-windows-msvc,     
+          # Running `D:\a\glowing-tribble\glowing-tribble\target\debug\build\gfx-backend-metal-4315de4833fbb566\build-script-build`
+          # error: failed to run custom build command for `gfx-backend-metal v0.3.3`
+          # Caused by:
+          #   process didn't exit successfully: `D:\a\glowing-tribble\glowing-tribble\target\debug\build\gfx-backend-metal-4315de4833fbb566\build-script-build` (exit code: 101)
+          # --- stderr
+          # thread 'main' panicked at 'unsupported target i686-pc-windows-msvc', C:\Users\runneradmin\.cargo\registry\src\github.com-1285ae84e5963aae\gfx-backend-metal-0.3.3\build.rs:17:9
+
+          # x86_64-pc-windows-gnu,
+          # Running `D:\a\glowing-tribble\glowing-tribble\target\debug\build\gfx-backend-metal-7605353f0391bda5\build-script-build`
+          # error: failed to run custom build command for `gfx-backend-metal v0.3.3`
+          # Caused by:
+          #   process didn't exit successfully: `D:\a\glowing-tribble\glowing-tribble\target\debug\build\gfx-backend-metal-7605353f0391bda5\build-script-build` (exit code: 101)
+          # --- stderr
+          # thread 'main' panicked at 'unsupported target x86_64-pc-windows-gnu', C:\Users\runneradmin\.cargo\registry\src\github.com-1ecc6299db9ec823\gfx-backend-metal-0.3.3\build.rs:17:9
+
+          # x86_64-pc-windows-msvc,
+          # Running `D:\a\glowing-tribble\glowing-tribble\target\debug\build\gfx-backend-metal-702024b54cbbe194\build-script-build`
+          # error: failed to run custom build command for `gfx-backend-metal v0.3.3`
+          # Caused by:
+          #   process didn't exit successfully: `D:\a\glowing-tribble\glowing-tribble\target\debug\build\gfx-backend-metal-702024b54cbbe194\build-script-build` (exit code: 101)
+          # --- stderr
+          # thread 'main' panicked at 'unsupported target x86_64-pc-windows-msvc', C:\Users\runneradmin\.cargo\registry\src\github.com-1ecc6299db9ec823\gfx-backend-metal-0.3.3\build.rs:17:9
+
         ]
         channel: [ nightly ]
         include:
