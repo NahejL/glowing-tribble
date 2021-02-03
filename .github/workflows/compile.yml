@@ -23,20 +23,45 @@ jobs:
     timeout-minutes: 360 # default
     # env:
     steps:
+        
+        # https://github.com/actions/setup-node
 
+        # region dump
       - name: Dump Github Context
         env:
           GITHUB_CONTEXT: ${{ toJSON( github ) }}
         run: echo "$GITHUB_CONTEXT"
-
+        # endregion 
+        #region checkout
+        # 
       - name: Checkout Code
         uses: actions/checkout@v2
+        #endregion
+        #region tool chain
+        # https://github.com/actions-rs/toolchain
+      - name: Set Toolchain
+        id: setToolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.triplet }}
+          default: true
+      - name: debug toolchain
+        env:
+          TOOLCHAIN_OUTPUT: ${{ toJSON( steps.setToolchain.outputs ) }}
+        run: echo "$TOOLCHAIN_OUTPUT"
+        #endregion
 
+        # https://github.com/actions-rs/cargo
       - name: Build
-        run: |
-          cargo build --target ${{ matrix.triplet }}
-          zip ./target/${{ matrix.triplet }} REAME.md
-          
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --all-features --target=${{ matrix.triplet }}
+        
+        # https://github.com/actions/cache
+        
+        # https://github.com/actions/create-release
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -47,7 +72,8 @@ jobs:
           release_name: ${{ github.ref }}
           draft: false
           prerelease: true
-
+        
+        # https://github.com/actions/upload-release-asset
       - name: Upload Release
         id: updload_release
         uses: actions/upload-release-asset@v1
