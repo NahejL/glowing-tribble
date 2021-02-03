@@ -34,9 +34,10 @@ jobs:
 
       - name: Build
         run: |
-          cargo build --target ${{ matrix.triplet }}
+          cargo build 
           zip ./target/${{ target.triplet }} REAME.md
-      
+      # --target ${{ matrix.triplet }}
+          
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
