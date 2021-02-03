@@ -87,3 +87,5 @@ fn main() -> amethyst::Result<()> {
 
   Ok(())
 }
+
+// trigger
