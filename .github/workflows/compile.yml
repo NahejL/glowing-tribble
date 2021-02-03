@@ -1,5 +1,5 @@
 name: compile
-on: [push]
+on: [ push ]
   # push:
   #   branch: 
   #     - master
@@ -57,7 +57,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --release --all-features --target=${{ matrix.triplet }}
+          args: --release --target=${{ matrix.triplet }}
         
         # https://github.com/actions/cache
         
