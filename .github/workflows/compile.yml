@@ -1,0 +1,63 @@
+name: compile
+on: 
+  push:
+    branch: 
+      - master
+    paths:
+      - 'src/**'
+
+jobs: 
+  build: 
+    strategy: 
+      matrix:
+        os: [
+          ubuntu-latest,
+          windows-latest,
+        ]
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 360 # default
+    fail-fast: false
+    env:
+      ASSET_PATH: ${{ format( './target/${0}', matrix.os ) }}
+    steps:
+
+      - name: Dump Github Context
+        env:
+          GITHUB_CONTEXT: ${{ toJSON( github ) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          cargo build --target ${{ matrix.os }}
+          zip ./target/${{ target.os }} REAME.md
+      
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          draft: false
+          prerelease: true
+
+      - name: Upload Release
+        id: updload_release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./target/${{ matrix.os }}.zip
+          asset_name: glowing-tribble.zip
+          asset_content_type: application/zip
+
+      - name: Update Downloads
+          env: DOWNLOAD_URL: ${{ steps.upload_release.outputs.browser_download_url }} 
+        run: echo "$DOWNLOAD_URL"
+        
