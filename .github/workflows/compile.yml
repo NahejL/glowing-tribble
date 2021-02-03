@@ -10,16 +10,17 @@ jobs:
   build: 
     strategy: 
       matrix:
-        os: [
-          ubuntu-latest,
-          windows-latest,
-        ]
-    name: ${{ matrix.os }}
+        include:
+          - os: ubuntu-latest
+            triplet: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            triplet: x86_64-pc-windows-msvc
+
+    name: ${{ matrix.os }} - ${{ matrix.triplet }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 360 # default
     fail-fast: false
-    env:
-      ASSET_PATH: ${{ format( './target/${0}', matrix.os ) }}
+    # env:
     steps:
 
       - name: Dump Github Context
@@ -32,8 +33,8 @@ jobs:
 
       - name: Build
         run: |
-          cargo build --target ${{ matrix.os }}
-          zip ./target/${{ target.os }} REAME.md
+          cargo build --target ${{ matrix.triplet }}
+          zip ./target/${{ target.triplet }} REAME.md
       
       - name: Create Release
         id: create_release
@@ -53,7 +54,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./target/${{ matrix.os }}.zip
+          asset_path: ./target/${{ matrix.triplet }}.zip
           asset_name: glowing-tribble.zip
           asset_content_type: application/zip
 
