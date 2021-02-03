@@ -1,11 +1,11 @@
 name: compile
-on: 
-  push:
-    branch: 
-      - master
-    paths:
-      - 'src/**'
-      - '.github/workflow/**'
+on: [push]
+  # push:
+  #   branch: 
+  #     - master
+  #   paths:
+  #     - 'src/**'
+  #     - '.github/workflow/**'
 
 jobs: 
   build: 
