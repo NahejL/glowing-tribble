@@ -59,7 +59,7 @@ jobs:
           asset_content_type: application/zip
 
       - name: Update Downloads
-          env: 
-            DOWNLOAD_URL: ${{ steps.upload_release.outputs.browser_download_url }} 
+        env: 
+          DOWNLOAD_URL: ${{ steps.upload_release.outputs.browser_download_url }} 
         run: echo "$DOWNLOAD_URL"
         
