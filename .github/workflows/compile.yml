@@ -28,13 +28,15 @@ jobs:
     - run: rustup default nightly
     - run: rustup set profile minimal
     - run: rustup target add x86_64-unknown-linux-gnu
-    - run: rustup target add x86_64-pc-windows-msvc
+    - run: rustup target add x86_64-pc-windows-gnu
     - run: rustup show
+
+    - run: cargo install cross
     
     - name: Build x86_64-unknown-linux-gnu --verbose --jobs 1
       run: cargo build --target=x86_64-unknown-linux-gnu --release
-    - name: Build x86_64-pc-windows-msvc --verbose --jobs 1
-      run: cargo build --target=x86_64-pc-windows-msvc --release
+    - name: Build x86_64-pc-windows-gnu --verbose --jobs 1
+      run: cross build --target=x86_64-pc-windows-gnu --release
 
     - name: Cache Dependencies
       uses: actions/cache@v2
@@ -43,13 +45,13 @@ jobs:
           ~/.cargo/registery
           ~/.cargo/git
           ./target/x86_64-unknown-linux-gnu
-          ./target/x86_64-pc-windows-msvc
+          ./target/x86_64-pc-windows-gnu
         key: ${{ runner.os }}-cargo-${{ hashFiles( '**/Cargo.lock' ) }}
 
     - name: Zip binaries with assets
       run: |
         zip -r x86_64-unknown-linux-gnu.zip ./target/x86_64-unknown-linux-gnu/release/glowing-tribble ./assets
-        zip -r x86_64-pc-windows-msvc.zip   ./target/x86_64-pc-windows-msvc/release/glowing-tribble   ./assets
+        zip -r x86_64-pc-windows-gnu.zip   ./target/x86_64-pc-windows-gnu/release/glowing-tribble   ./assets
 
     - name: Create Release
       id: create_release
@@ -74,17 +76,17 @@ jobs:
         asset_content_type: application/zip
 
     - name: Upload Release
-      id: updload_release_x86_64-pc-windows-msvc
+      id: updload_release_x86_64-pc-windows-gnu
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: x86_64-pc-windows-msvc.zip
-        asset_name: x86_64-pc-windows-msvc.zip
+        asset_path: x86_64-pc-windows-gnu.zip
+        asset_name: x86_64-pc-windows-gnu.zip
         asset_content_type: application/zip
 
-    - run: echo "${{ steps.updload_release_x86_64-unknown-linux-gnu.browser_download_url }} ${{ steps.updload_release_x86_64-pc-windows-msvc.browser_download_url }}" > ./page/releases.json
+    - run: echo "${{ steps.updload_release_x86_64-unknown-linux-gnu.browser_download_url }} ${{ steps.updload_release_x86_64-pc-windows-gnu.browser_download_url }}" > ./page/releases.json
 
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@3.7.1
