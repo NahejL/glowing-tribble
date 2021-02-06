@@ -30,7 +30,7 @@ jobs:
       run: cargo build --target=x86_64-pc-windows-msvc --release
 
     - name: Cache Dependencies
-      uses: actions/cache@2
+      uses: actions/cache@v2
       with: 
         path: |
           ~/.cargo/registery
