@@ -16,6 +16,7 @@ jobs:
 
     steps:
 
+      # everything here is just trying to fix build issues in vm
     - name: Apt Install
       run: |
         sudo apt-get install -y libasound2-dev
@@ -23,8 +24,12 @@ jobs:
 
     - run: git config --global init.defaultBranch master
     - uses: actions/checkout@v2
-    - run: ls -a .
-    - run: sudo chown -R $USER:$USER ./target
+    - run: |
+        mkdir target
+        sudo chown -R $USER:$USER ./target
+        yum install postgresql-devel
+        cargo install diesel_cli --no-default-features --features postgres
+    # end of trying to fix to vm
 
     - run: rustup default nightly
     - run: rustup set profile minimal
