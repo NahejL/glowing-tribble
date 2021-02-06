@@ -15,7 +15,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    
+
+    - use: apt-get install -y libasound2-dev
+
     - uses: actions/checkout@v2
 
     - run: rustup default nightly
