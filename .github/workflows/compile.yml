@@ -21,7 +21,9 @@ jobs:
         sudo apt-get install -y libasound2-dev
       # sudo apt install gcc-multilib
 
+    - run: git config --global init.defaultBranch master
     - uses: actions/checkout@v2
+    - run: ls -a .
     - run: sudo chown -R $USER:$USER ./target
 
     - run: rustup default nightly
