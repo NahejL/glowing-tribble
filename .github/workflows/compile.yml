@@ -80,7 +80,7 @@ jobs:
     - run: echo "${{ steps.updload_release_x86_64-unknown-linux-gnu.browser_download_url }} ${{ steps.updload_release_x86_64-pc-windows-msvc.browser_download_url }}" > ./page/releases.json
 
     - name: Deploy
-      uses: James/Ives/github-pages-deploy-action
+      uses: JamesIves/github-pages-deploy-action
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         BRANCH: gh-pages
