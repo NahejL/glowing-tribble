@@ -18,8 +18,8 @@ jobs:
 
     - name: Apt Install
       run: |
-      sudo apt-get install -y libasound2-dev
-      sudo apt install gcc-multilib
+        sudo apt-get install -y libasound2-dev
+        sudo apt install gcc-multilib
 
     - uses: actions/checkout@v2
 
