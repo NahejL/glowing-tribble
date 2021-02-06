@@ -16,16 +16,40 @@ use amethyst::{
   error::Error,
   input::{ InputBundle, StringBindings },
   ui::{ RenderUi, UiBundle },
+  
 };
+
+use log::{ info, warn };
 
 fn main() -> amethyst::Result<()> {
   // #region init logger
-  amethyst::start_logger( Default::default() );
+  amethyst::Logger::from_config_formatter( amethyst::LoggerConfig {
+    stdout: amethyst::StdoutLog::Colored,
+    level_filter: amethyst::LogLevelFilter::Info,
+    log_file: Option::None,
+    allow_env_override: true,
+    log_gfx_backend_level: Option::Some( amethyst::LogLevelFilter::Warn ),
+    log_gfx_rendy_level: Option::Some( amethyst::LogLevelFilter::Warn ),
+    module_levels: vec![]
+  }, | out, message, record | {
+
+    out.finish( format_args!(
+      "[{level}][{target}]{message}",
+      level = record.level(),
+      target = record.target(),
+      message = message
+    ) )
+
+  } ).start();
   // #endregion 
   // #region application setup
   { 
+    info!( "ok app setup start" );
 
-    let app_root = application_root_dir()?;
+    let app_root = application_root_dir()?; // scope to asset_dir & game_data
+
+    info!( "{}", app_root.display().to_string() );
+
     let asset_dir = app_root.join( "assets" );
     let game_data = (|| -> Result< GameDataBuilder, Error > {
 
@@ -83,8 +107,6 @@ fn main() -> amethyst::Result<()> {
     game.run();
   } 
   // #endregion
-
-
   Ok(())
 }
 

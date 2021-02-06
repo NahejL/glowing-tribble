@@ -1,99 +1,88 @@
-name: compile
-on: [ push ]
-  # push:
-  #   branch: 
-  #     - master
-  #   paths:
-  #     - 'src/**'
-  #     - '.github/workflow/**'
+name: Rust
 
-jobs: 
-  build: 
-    strategy: 
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            triplet: x86_64-unknown-linux-gnu
-          - os: windows-latest
-            triplet: x86_64-pc-windows-msvc
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
-    name: ${{ matrix.os }} - ${{ matrix.triplet }}
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 360 # default
-    # env:
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
     steps:
-        
-        # https://github.com/actions/setup-node
+    
+    - uses: actions/checkout@v2
 
-        # region dump
-      - name: Dump Github Context
-        env:
-          GITHUB_CONTEXT: ${{ toJSON( github ) }}
-        run: echo "$GITHUB_CONTEXT"
-        # endregion 
-        #region checkout
-        # 
-      - name: Checkout Code
-        uses: actions/checkout@v2
-        #endregion
-        #region tool chain
-        # https://github.com/actions-rs/toolchain
-      - name: Set Toolchain
-        id: setToolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: ${{ matrix.triplet }}
-          default: true
-      - name: debug toolchain
-        env:
-          TOOLCHAIN_OUTPUT: ${{ toJSON( steps.setToolchain.outputs ) }}
-        run: echo "$TOOLCHAIN_OUTPUT"
-        #endregion
+    - run: rustup default nightly
+    - run: rustup set profile minimal
+    - run: rustup target add x86_64-unknown-linux-gnu
+    - run: rustup target add x86_64-pc-windows-msvc
+    - run: rustup show
+    
+    - name: Build x86_64-unknown-linux-gnu
+      run: cargo build --target=x86_64-unknown-linux-gnu --release
+    - name: Build x86_64-pc-windows-msvc
+      run: cargo build --target=x86_64-pc-windows-msvc --release
 
-        # https://github.com/actions-rs/cargo
-      - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --target=${{ matrix.triplet }}
-        
-        # https://github.com/actions/cache
-        
-        # https://github.com/marketplace/actions/easy-zip-files
-      - name: Zip
-        uses: papeloto/action-zip@v1
-        with: 
-          files: target/${{ matrix.triplet }}
-          dest: target/${{ matrix.triplet }}.zip
-          
-      - name: Create Release # https://github.com/actions/create-release
+    - name: Cache Dependencies
+      uses: actions/cache@2
+      with: 
+        path: |
+          ~/.cargo/registery
+          ~/.cargo/git
+          ./target/x86_64-unknown-linux-gnu
+          ./target/x86_64-pc-windows-msvc
+        key: ${{ runner.os }}-cargo-${{ hashFiles( '**/Cargo.lock' ) }}
+
+    - name: Zip binaries with assets
+      run: |
+        zip -r x86_64-unknown-linux-gnu.zip ./target/x86_64-unknown-linux-gnu/release/glowing-tribble ./assets
+        zip -r x86_64-pc-windows-msvc.zip   ./target/x86_64-pc-windows-msvc/release/glowing-tribble   ./assets
+
+    - name: Create Release # https://github.com/actions/create-release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}-${{ matrix.os }}-${{ matrix.triplet }}-${{ github.run_number }}
+          tag_name: ${{ github.ref }}-${{ github.run_number }}
           release_name: ${{ github.ref }}
           draft: false
           prerelease: true
-        
-        # https://github.com/actions/upload-release-asset
-      - name: Upload Release
-        id: updload_release
+
+    - name: Upload Release # https://github.com/actions/upload-release-asset
+        id: updload_release_x86_64-unknown-linux-gnu
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./target/${{ matrix.triplet }}.zip
-          asset_name: glowing-tribble.zip
+          asset_path: x86_64-unknown-linux-gnu.zip
+          asset_name: x86_64-unknown-linux-gnu.zip
           asset_content_type: application/zip
 
-      - name: Update Downloads
-        env: 
-          DOWNLOAD_URL: ${{ steps.upload_release.outputs.browser_download_url }} 
-        run: echo "$DOWNLOAD_URL"
+    - name: Upload Release # https://github.com/actions/upload-release-asset
+        id: updload_release_x86_64-pc-windows-msvc
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: x86_64-pc-windows-msvc.zip
+          asset_name: x86_64-pc-windows-msvc.zip
+          asset_content_type: application/zip
 
-      # fml its not triggering
+    - run: echo "${{ steps.updload_release_x86_64-unknown-linux-gnu.browser_download_url }} ${{ steps.updload_release_x86_64-pc-windows-msvc.browser_download_url }}" > ./page/releases.json
+
+    - name: Deploy
+      uses: James/Ives/github-pages-deploy-action
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH: gh-pages
+        FOLDER: page
+        CLEAN: true
