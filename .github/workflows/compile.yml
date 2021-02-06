@@ -16,7 +16,7 @@ jobs:
 
     steps:
 
-    - use: apt-get install -y libasound2-dev
+    - uses: apt-get install -y libasound2-dev
 
     - uses: actions/checkout@v2
 
