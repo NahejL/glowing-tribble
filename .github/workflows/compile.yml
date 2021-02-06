@@ -44,7 +44,7 @@ jobs:
         zip -r x86_64-unknown-linux-gnu.zip ./target/x86_64-unknown-linux-gnu/release/glowing-tribble ./assets
         zip -r x86_64-pc-windows-msvc.zip   ./target/x86_64-pc-windows-msvc/release/glowing-tribble   ./assets
 
-    - name: Create Release # https://github.com/actions/create-release
+    - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -55,7 +55,7 @@ jobs:
           draft: false
           prerelease: true
 
-    - name: Upload Release # https://github.com/actions/upload-release-asset
+    - name: Upload Release
         id: updload_release_x86_64-unknown-linux-gnu
         uses: actions/upload-release-asset@v1
         env:
@@ -66,7 +66,7 @@ jobs:
           asset_name: x86_64-unknown-linux-gnu.zip
           asset_content_type: application/zip
 
-    - name: Upload Release # https://github.com/actions/upload-release-asset
+    - name: Upload Release
         id: updload_release_x86_64-pc-windows-msvc
         uses: actions/upload-release-asset@v1
         env:
