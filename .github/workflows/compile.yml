@@ -19,12 +19,11 @@ jobs:
       # everything here is just trying to fix build issues in vm
     - name: Apt Install
       run: |
-        sudo apt-get install -y libasound2-dev libmysqlclient-dev
-      # sudo apt install gcc-multilib
+        sudo apt install gcc pkg-config openssl libasound2-dev cmake build-essential python3 libfreetype6-dev libexpat1-dev libxcb-composite0-dev libssl-dev libx11-dev libfontconfig1-dev
+      
 
     - run: git config --global init.defaultBranch master
     - uses: actions/checkout@v2
-    # end of trying to fix to vm
 
     - run: rustup default nightly
     - run: rustup set profile minimal
