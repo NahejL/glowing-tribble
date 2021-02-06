@@ -19,15 +19,11 @@ jobs:
       # everything here is just trying to fix build issues in vm
     - name: Apt Install
       run: |
-        sudo apt-get install -y libasound2-dev libmysqlclient-dev postgresql-devel
+        sudo apt-get install -y libasound2-dev libmysqlclient-dev
       # sudo apt install gcc-multilib
 
     - run: git config --global init.defaultBranch master
     - uses: actions/checkout@v2
-    - run: |
-        mkdir target
-        sudo chown -R $USER:$USER ./target
-        cargo install diesel_cli --no-default-features --features postgres
     # end of trying to fix to vm
 
     - run: rustup default nightly
@@ -36,9 +32,9 @@ jobs:
     - run: rustup target add x86_64-pc-windows-msvc
     - run: rustup show
     
-    - name: Build x86_64-unknown-linux-gnu
+    - name: Build x86_64-unknown-linux-gnu --verbose --jobs 1
       run: cargo build --target=x86_64-unknown-linux-gnu --release
-    - name: Build x86_64-pc-windows-msvc
+    - name: Build x86_64-pc-windows-msvc --verbose --jobs 1
       run: cargo build --target=x86_64-pc-windows-msvc --release
 
     - name: Cache Dependencies
