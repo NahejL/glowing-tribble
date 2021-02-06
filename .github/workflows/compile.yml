@@ -19,7 +19,7 @@ jobs:
       # everything here is just trying to fix build issues in vm
     - name: Apt Install
       run: |
-        sudo apt-get install -y libasound2-dev
+        sudo apt-get install -y libasound2-dev libmysqlclient-dev postgresql-devel
       # sudo apt install gcc-multilib
 
     - run: git config --global init.defaultBranch master
@@ -27,7 +27,6 @@ jobs:
     - run: |
         mkdir target
         sudo chown -R $USER:$USER ./target
-        yum install postgresql-devel
         cargo install diesel_cli --no-default-features --features postgres
     # end of trying to fix to vm
 

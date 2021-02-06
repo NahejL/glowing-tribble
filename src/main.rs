@@ -110,4 +110,4 @@ fn main() -> amethyst::Result<()> {
   Ok(())
 }
 
-// triggersadfsadfasdasdadsaasasasdasasdasdasdasdasdasdasdaasdasdasdasd
+// triggersadfsadfasdasdadsaasasasdasasdasdasdasdasdasdasdaasdasdasdasdasd
