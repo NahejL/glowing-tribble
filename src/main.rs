@@ -6,7 +6,11 @@ mod systems;
 use amethyst::{
   prelude::*,
   renderer::{
-    plugins::{ RenderFlat2D, RenderToWindow },
+    plugins::{ 
+      RenderFlat2D, 
+      RenderToWindow,
+      RenderPbr3D,
+    },
     types::DefaultBackend,
     RenderingBundle
   },
@@ -18,8 +22,8 @@ use amethyst::{
   ui::{ RenderUi, UiBundle },
   
 };
-
-use log::{ info, warn };
+use std::path::PathBuf;
+use log::{ info };
 
 fn main() -> amethyst::Result<()> {
   // #region init logger
@@ -34,7 +38,7 @@ fn main() -> amethyst::Result<()> {
   }, | out, message, record | {
 
     out.finish( format_args!(
-      "[{level}][{target}]{message}",
+      "[{level}][ {target} ] {message}",
       level = record.level(),
       target = record.target(),
       message = message
@@ -46,57 +50,60 @@ fn main() -> amethyst::Result<()> {
   { 
     info!( "ok app setup start" );
 
-    let app_root = application_root_dir()?; // scope to asset_dir & game_data
+    let ( asset_dir, game_data ) = (| app_root: PathBuf | -> Result<( PathBuf, GameDataBuilder ), Error > {
 
-    info!( "{}", app_root.display().to_string() );
+      info!( "{}", app_root.display().to_string() );
 
-    let asset_dir = app_root.join( "assets" );
-    let game_data = (|| -> Result< GameDataBuilder, Error > {
-
-      let rendering_bundle = (|| -> Result< RenderingBundle< DefaultBackend >, ConfigError > {
-    
-        let window_plugin = RenderToWindow::from_config_path( app_root.join( "config" ).join( "display.ron" ) )?
-        .with_clear([ 0.0, 0.0, 0.0, 1.0 ]) ;
-
-        let flat_plugin = RenderFlat2D::default();
-
-        return Ok( RenderingBundle::< DefaultBackend >::new()
-        .with_plugin( RenderUi::default() )
-        .with_plugin( window_plugin )
-        .with_plugin( flat_plugin ) );
-      })()?;
-
-      let transform_bundle = TransformBundle::new();
-
-      let ( input_bundle, ui_bundle ) = {
-
-        type BINDINGS = StringBindings;
-        
-        let input_bundle = {
+      let asset_dir = app_root.join( "assets" );
       
-          let bindings_path = app_root.join( "config" ).join( "bindings.ron" );
+      let game_data = (|| -> Result< GameDataBuilder, Error > {
+
+        let rendering_bundle = (|| -> Result< RenderingBundle< DefaultBackend >, ConfigError > {
+      
+          let window_plugin = RenderToWindow::from_config_path( app_root.join( "config" ).join( "display.ron" ) )?
+          .with_clear([ 0.0, 0.0, 0.0, 1.0 ]) ;
+
+          return Ok( RenderingBundle::< DefaultBackend >::new()
+          .with_plugin( RenderUi::default() )
+          .with_plugin( window_plugin )
+          .with_plugin( RenderFlat2D::default() )
+          // .with_plugin( RenderPbr3D::default() ) 
+          ) ;
+        })()?;
+
+        let transform_bundle = TransformBundle::new();
+
+        let ( input_bundle, ui_bundle ) = ( || -> Result< ( _, _ ), Error > {
+          type BINDINGS = StringBindings;
+          
+          let input_bundle = {
         
-          InputBundle::< BINDINGS >::new()
-          .with_bindings_from_file( bindings_path )?
-        };
+            let bindings_path = app_root.join( "config" ).join( "bindings.ron" );
+          
+            InputBundle::< BINDINGS >::new()
+            .with_bindings_from_file( bindings_path )?
+          };
 
-        let ui_bundle = UiBundle::< BINDINGS >::new();
+          let ui_bundle = UiBundle::< BINDINGS >::new();
 
-        ( input_bundle, ui_bundle )
-      };
+          Ok(( input_bundle, ui_bundle ))
+        })()?;
 
-      return Ok( 
-        GameDataBuilder::default()
-        .with_bundle( rendering_bundle )?
-        .with_bundle( transform_bundle )?
-        .with_bundle( input_bundle )?
-        .with_bundle( ui_bundle )?
-        .with( systems::PaddleSystem, "paddle_system", &[ "input_system" ] )
-        .with( systems::BallSystem, "ball_system", &[] )
-        .with( systems::CollisionSystem, "collision_system", &[ "paddle_system", "ball_system"]) 
-        .with( systems::WinningSystem, "winning_system", &[ "ball_system" ])
-      );
-    })()?;
+        return Ok( 
+          GameDataBuilder::default()
+          .with_bundle( rendering_bundle )?
+          .with_bundle( transform_bundle )?
+          .with_bundle( input_bundle )?
+          .with_bundle( ui_bundle )?
+          .with( systems::PaddleSystem, "paddle_system", &[ "input_system" ] )
+          .with( systems::BallSystem, "ball_system", &[] )
+          .with( systems::CollisionSystem, "collision_system", &[ "paddle_system", "ball_system"]) 
+          .with( systems::WinningSystem, "winning_system", &[ "ball_system" ])
+        );
+      })()?;
+    
+      return Ok(( asset_dir, game_data ));
+    })( application_root_dir()? )?;
 
     let mut game = Application::new( 
       asset_dir, 

@@ -21,15 +21,16 @@ jobs:
       run: |
         sudo apt install gcc pkg-config openssl libasound2-dev cmake build-essential python3 libfreetype6-dev libexpat1-dev libxcb-composite0-dev libssl-dev libx11-dev libfontconfig1-dev
       
-
     - run: git config --global init.defaultBranch master
     - uses: actions/checkout@v2
 
-    - run: rustup default nightly
-    - run: rustup set profile minimal
-    - run: rustup target add x86_64-unknown-linux-gnu
-    - run: rustup target add x86_64-pc-windows-gnu
-    - run: rustup show
+    - name: Setup rustup
+      run: | 
+        rustup default nightly
+        rustup set profile minimal
+        rustup target add x86_64-unknown-linux-gnu
+        rustup target add x86_64-pc-windows-gnu
+        rustup show
 
     - run: cargo install cross
     
@@ -38,6 +39,7 @@ jobs:
     - name: Build x86_64-pc-windows-gnu --verbose --jobs 1
       run: cross build --target=x86_64-pc-windows-gnu --release
 
+      # Before or After installs ???
     - name: Cache Dependencies
       uses: actions/cache@v2
       with: 
@@ -50,8 +52,10 @@ jobs:
 
     - name: Zip binaries with assets
       run: |
-        zip -r x86_64-unknown-linux-gnu.zip ./target/x86_64-unknown-linux-gnu/release/glowing-tribble ./assets
-        zip -r x86_64-pc-windows-gnu.zip   ./target/x86_64-pc-windows-gnu/release/glowing-tribble   ./assets
+        mv ./target/x86_64-unknown-linux-gnu/release/glowing-tribble .
+        zip -r x86_64-unknown-linux-gnu.zip ./glowing-tribble ./assets ./config
+        mv ./target/x86_64-pc-windows-gnu/release/glowing-tribble .
+        zip -r x86_64-pc-windows-gnu.zip ./glowing-tribble ./assets ./config
 
     - name: Create Release
       id: create_release
@@ -86,7 +90,15 @@ jobs:
         asset_name: x86_64-pc-windows-gnu.zip
         asset_content_type: application/zip
 
-    - run: echo "${{ steps.updload_release_x86_64-unknown-linux-gnu.browser_download_url }} ${{ steps.updload_release_x86_64-pc-windows-gnu.browser_download_url }}" > ./page/releases.json
+    # Did not work
+    - run: echo "${{ steps.updload_release_x86_64-unknown-linux-gnu.browser_download_url }} ${{ steps.updload_release_x86_64-pc-windows-gnu.browser_download_url }}"
+    # > ./page/releases.json
+    # - name: write json
+    #   uses: jsdaniell/create-json@1.1.2
+    #   with: 
+    #     dir: "./"
+    #     name: "releases.json"
+    #     json: '{ "linux": "${{  }}", "": "" }'
 
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@3.7.1
