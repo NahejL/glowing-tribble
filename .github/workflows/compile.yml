@@ -32,11 +32,6 @@ jobs:
     - run: rustup show
 
     - run: cargo install cross
-    
-    - name: Build x86_64-unknown-linux-gnu --verbose --jobs 1
-      run: cargo build --target=x86_64-unknown-linux-gnu --release
-    - name: Build x86_64-pc-windows-gnu --verbose --jobs 1
-      run: cross build --target=x86_64-pc-windows-gnu --release
 
     - name: Cache Dependencies
       uses: actions/cache@v2
@@ -47,13 +42,16 @@ jobs:
           ./target/x86_64-unknown-linux-gnu
           ./target/x86_64-pc-windows-gnu
         key: ${{ runner.os }}-cargo-${{ hashFiles( '**/Cargo.lock' ) }}
+    
+    - name: Build x86_64-unknown-linux-gnu --verbose
+      run: cargo build --target=x86_64-unknown-linux-gnu --release
+    - name: Build x86_64-pc-windows-gnu --verbose
+      run: cross build --target=x86_64-pc-windows-gnu --release
 
     - name: Zip binaries with assets
       run: |
-        mv ./target/x86_64-unknown-linux-gnu/release/glowing-tribble .
-        zip -r x86_64-unknown-linux-gnu.zip ./glowing-tribble ./assets ./config
-        mv ./target/x86_64-pc-windows-gnu/release/glowing-tribble .
-        zip -r x86_64-pc-windows-gnu.zip ./glowing-tribble ./assets ./config
+        zip -r x86_64-unknown-linux-gnu.zip ./target/x86_64-unknown-linux-gnu/release/glowing-tribble ./assets ./config
+        zip -r x86_64-pc-windows-gnu.zip ./target ./assets ./config
 
     - name: Create Release
       id: create_release
