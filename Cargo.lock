@@ -1427,6 +1427,7 @@ name = "glowing-tribble"
 version = "0.1.0"
 dependencies = [
  "amethyst",
+ "fern",
  "log",
 ]
 

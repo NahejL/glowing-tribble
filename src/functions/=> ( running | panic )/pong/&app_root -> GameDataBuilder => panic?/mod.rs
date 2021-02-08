@@ -1,10 +1,17 @@
 
-use log::info;
+use std::path::PathBuf;
+use amethyst::{
+  GameDataBuilder,
+  input::StringBindings,
+  core::transform::bundle::TransformBundle, 
+};
 
-#[ path = "&app_root -> rendering_bundle" ]
+
+
+#[ path = "&app_root -> rendering_bundle/mod.rs" ]
 mod rendering_bundle;
 
-#[ path = "bindings_config => <BindingsTypes> &app_root -> input_bundle" ]
+#[ path = "bindings_config => <BindingsTypes> &app_root -> input_bundle/mod.rs" ]
 mod input_bundle;
 
 pub fn get( app_root: &PathBuf ) -> GameDataBuilder {
@@ -12,16 +19,17 @@ pub fn get( app_root: &PathBuf ) -> GameDataBuilder {
   type BINDINGS = StringBindings;
 
   let game_data_builder = GameDataBuilder::default();
+
   let bundles = vec![
-    rendering_bundle.get( app_root ),
+    rendering_bundle::get( app_root ),
     TransformBundle::new(),
-    input_bundle.get< BINDINGS >( app_root ),
+    input_bundle::get< BINDINGS >( app_root ),
     UiBundle::< BINDINGS >::new()
   ];
 
   for bundle in bundles.iter() {
 
-    let result = game_data_builder.with_bundle( bundle )
+    let result = game_data_builder.with_bundle( bundle );
 
     if let Err( error ) = result {
 

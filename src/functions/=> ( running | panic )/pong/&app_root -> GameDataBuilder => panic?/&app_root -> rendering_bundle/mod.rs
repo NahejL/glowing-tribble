@@ -1,5 +1,5 @@
 
-#[ path = "display_config => &app_root -> render_to_window_plugin" ]
+#[ path = "display_config => &app_root -> render_to_window_plugin/mod.rs" ]
 mod render_to_window_plugin;
 
 pub fn get( app_root: &PathBuf ) -> RenderingBundle< DefaultBackend > {

@@ -1,4 +1,8 @@
 
+#[ path = "../structures/GameState.rs" ]
+mod Game;
+
+
 impl SimpleState for Game {
 
   fn on_start( &mut self, data: StateData< '_, GameData< '_, '_ > > ) {

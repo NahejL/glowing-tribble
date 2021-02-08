@@ -1,10 +1,14 @@
 
 use log::info;
-use amethyst::app_root_dir::application_root_dir;
+use amethyst::utils::app_root_dir::application_root_dir;
+use std::{
+  path::PathBuf,
+  io::Error
+};
 
-pub fn get() {
+pub fn get() -> PathBuf {
 
-  let result: Result< PathBuf, Error > = application_root_dir()
+  let result: Result< PathBuf, Error > = application_root_dir();
   
   match result {
     Ok( app_root ) => {

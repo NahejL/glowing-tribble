@@ -6,10 +6,10 @@
 #[ path = "functions/=> logging/default.rs" ]
 mod logging;
 
-#[ path = "functions/=> running/pong.rs" ]
+#[ path = "functions/=> ( running | panic )/pong/mod.rs" ]
 mod running;
 
-fn main() -> amethyst::Result {
+fn main() -> amethyst::Result<()> {
 
   logging::run();
 

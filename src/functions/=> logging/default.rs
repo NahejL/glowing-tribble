@@ -1,8 +1,6 @@
 
 use amethyst::{
-  Logger::{
-    from_config_formatter
-  },
+  Logger,
   LoggerConfig,
   StdoutLog::Colored,
   LogLevelFilter::{
@@ -10,11 +8,6 @@ use amethyst::{
     Warn
   }
 };
-
-use std::Option::{
-  None,
-  Some
-}
 
 /// Create and Consume Logger with (currently) default configuration
 pub fn run(){
@@ -27,24 +20,22 @@ pub fn run(){
     log_gfx_backend_level: Some( Warn ),
     log_gfx_rendy_level: Some( Warn ),
     module_levels: vec![]
-  }
+  };
 
-  let formatter = | out, message, record | {
-  
-    let output = format_args!(
-      "[{level}][ {target} ] {message}",
-      level = record.level(),
-      target = record.target(),
-      message = message
-    );
-
-    out.finish( output )
-  
-  }
-
-  from_config_formatter( 
+  Logger::from_config_formatter( 
     logger_config, 
-    formatter 
+    | out, message, record | {
+  
+      let output = format_args!(
+        "[{level}][ {target} ] {message}",
+        level = record.level(),
+        target = record.target(),
+        message = message
+      );
+  
+      out.finish( output )
+    
+    }
   )
   .start();
 

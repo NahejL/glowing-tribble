@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
-const CONFIG: &str = "config"
-const DISPLAY: &str = "display.ron"
+const CONFIG: &str = "config";
+const DISPLAY: &str = "display.ron";
 
 pub fn get( app_root: &PathBuf ) {
 
