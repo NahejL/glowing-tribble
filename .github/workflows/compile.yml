@@ -25,7 +25,7 @@ jobs:
     - run: git config --global init.defaultBranch master
     - uses: actions/checkout@v2
 
-    - run: rustup default nightly
+    - run: rustup default 1.47.0 # nightly 
     - run: rustup set profile minimal
     - run: rustup target add x86_64-unknown-linux-gnu
     - run: rustup target add x86_64-pc-windows-gnu
@@ -50,8 +50,10 @@ jobs:
 
     - name: Zip binaries with assets
       run: |
-        zip -r x86_64-unknown-linux-gnu.zip ./target/x86_64-unknown-linux-gnu/release/glowing-tribble ./assets ./config
-        zip -r x86_64-pc-windows-gnu.zip ./target ./assets ./config
+        mv ./target/x86_64-unknown-linux-gnu/release/glowing-tribble .
+        zip -r x86_64-unknown-linux-gnu.zip ./glowing-tribble ./assets ./config
+        mv ./target/x86_64-pc-windows-gnu/release/glowing-tribble.exe
+        zip -r x86_64-pc-windows-gnu.zip ./glowing-tribble.exe ./assets ./config
 
     - name: Create Release
       id: create_release
