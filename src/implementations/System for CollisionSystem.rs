@@ -1,19 +1,3 @@
-use amethyst::{
-  core::{ 
-    Transform, 
-    //SystemDesc 
-  },
-  //derive::SystemDesc,
-  ecs::{ 
-    Join, ReadStorage, System, 
-    //SystemData, World, 
-    WriteStorage 
-  }
-};
-
-use crate::game::*;
-
-pub struct CollisionSystem;
 
 impl<'s> System<'s> for CollisionSystem {
 
@@ -69,4 +53,3 @@ impl<'s> System<'s> for CollisionSystem {
   }
 
 }
-

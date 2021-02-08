@@ -1,31 +1,3 @@
-mod paddle;
-pub use paddle::*;
-
-mod ball;
-pub use ball::*;
-
-use amethyst::{
-  assets::{ AssetStorage, Loader, Handle },
-  core::{
-    transform::Transform,
-    timing::Time
-  },
-  ecs::{ 
-    //Component, DenseVecStorage, 
-    Entity },
-  prelude::*,
-  renderer::{ Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteSheetFormat, Texture },
-  ui::{ Anchor, LineMode, TtfFormat, UiText, UiTransform },
-};
-
-pub const ARENA_HEIGHT: f32 = 100.0;
-pub const ARENA_WIDTH: f32 = 100.0;
-
-#[derive( Default )]
-pub struct Game {
-  ball_spawn_timer: Option< f32 >,
-  sprite_sheet_handle: Option< Handle < SpriteSheet > >,
-}
 
 impl SimpleState for Game {
 
@@ -207,15 +179,4 @@ impl SimpleState for Game {
     Trans::None
   }
 
-}
-
-#[derive(Default)]
-pub struct ScoreBoard {
-  pub score_left: i32,
-  pub score_right: i32,
-}
-
-pub struct ScoreText {
-  pub left_score: Entity,
-  pub right_score: Entity,
 }

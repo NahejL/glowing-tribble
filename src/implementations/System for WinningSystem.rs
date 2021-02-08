@@ -1,28 +1,4 @@
 
-use amethyst::{
-  core::{
-    transform::Transform,
-    //SystemDesc,
-  },
-  derive::SystemDesc,
-  ecs::{ 
-    Join, 
-    ReadExpect,
-    System, 
-    Entity,
-    SystemData, 
-    //World, 
-    Write,
-    WriteStorage 
-  },
-  ui::UiText
-};
-
-use crate::game::*;
-
-#[derive(SystemDesc)]
-pub struct WinningSystem;
-
 impl<'s> System<'s> for WinningSystem {
 
   type SystemData = (

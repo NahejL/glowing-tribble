@@ -1,20 +1,3 @@
-use amethyst::{
-  core::{
-    timing::Time,
-    transform::Transform,
-    //SystemDesc,
-  },
-  derive::SystemDesc,
-  ecs::{ Join, Read, ReadStorage, System, SystemData, 
-    //World, 
-    WriteStorage }
-};
-
-use crate::game::*;
-
-#[derive( SystemDesc )]
-pub struct BallSystem;
-
 impl<'s> System<'s> for BallSystem {
 
   type SystemData = (

@@ -1,19 +1,3 @@
-use amethyst::{
-  core::{ Transform, 
-    //SystemDesc 
-  },
-  derive::SystemDesc,
-  ecs::{ Join, Read, ReadStorage, System, SystemData, 
-    //World, 
-    WriteStorage },
-  input::{ InputHandler, StringBindings }
-};
-
-use crate::game::{ ARENA_HEIGHT, Paddle, Side, SOME_HEIGHT };
-// use crate::paddle::{ Paddle, Side };
-
-#[derive( SystemDesc )]
-pub struct PaddleSystem;
 
 impl<'s> System<'s> for PaddleSystem {
 
