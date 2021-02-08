@@ -50,8 +50,8 @@ jobs:
 
     - name: Zip binaries with assets
       run: |
-        zip -r x86_64-unknown-linux-gnu.zip ./target/x86_64-unknown-linux-gnu/release/glowing-tribble ./assets
-        zip -r x86_64-pc-windows-gnu.zip   ./target/x86_64-pc-windows-gnu/release/glowing-tribble   ./assets
+        zip -r x86_64-unknown-linux-gnu.zip ./target/x86_64-unknown-linux-gnu/release/glowing-tribble ./assets ./config
+        zip -r x86_64-pc-windows-gnu.zip   ./target/x86_64-pc-windows-gnu/release/glowing-tribble   ./assets ./config
 
     - name: Create Release
       id: create_release
