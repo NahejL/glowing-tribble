@@ -21,40 +21,62 @@ jobs:
       run: |
         sudo apt install gcc pkg-config openssl libasound2-dev cmake build-essential python3 libfreetype6-dev libexpat1-dev libxcb-composite0-dev libssl-dev libx11-dev libfontconfig1-dev
       
-
     - run: git config --global init.defaultBranch master
     - uses: actions/checkout@v2
 
-    - run: rustup default 1.47.0 # nightly 
-    - run: rustup set profile minimal
-    - run: rustup target add x86_64-unknown-linux-gnu
-    - run: rustup target add x86_64-pc-windows-gnu
-    - run: rustup show
-
-    - run: cargo install cross
+    - name: Rustup
+      run: | 
+        rustup default 1.47.0 # nightly 
+        rustup set profile minimal
+        rustup target add x86_64-unknown-linux-gnu
+        rustup target add x86_64-pc-windows-gnu
+        rustup show
 
     - name: Cache Dependencies
-      uses: actions/cache@v2
-      with: 
-        path: |
-          ~/.cargo/registery
-          ~/.cargo/git
-          ./target/x86_64-unknown-linux-gnu
-          ./target/x86_64-pc-windows-gnu
-        key: ${{ runner.os }}-cargo-${{ hashFiles( '**/Cargo.lock' ) }}
+      id: cache
+      uses: Swatinem/rust-cache@v1
+      # original cache action
+      # with: 
+      #   path: |
+      #     ~/.cargo/registery
+      #     ~/.cargo/git
+      #     ./target/x86_64-unknown-linux-gnu
+      #     ./target/x86_64-pc-windows-gnu
+      #   key: ${{ runner.os }}-cargo-${{ hashFiles( '**/Cargo.lock' ) }}
+
+    - run: echo "Cache hit: ${{ steps.cache.outputs[ 'cache-hit' ] }}"
+
+    - run: cargo install cross
     
     - name: Build x86_64-unknown-linux-gnu --verbose
       run: cargo build --target=x86_64-unknown-linux-gnu --release
     - name: Build x86_64-pc-windows-gnu --verbose
       run: cross build --target=x86_64-pc-windows-gnu --release
 
-    - name: Zip binaries with assets
-      run: |
+    # - name: Zip binaries with assets
+    - name: Move & Zip Linux Binaries
+      id: mvLinux
+      continue-on-error: true
+      run: | 
         mv ./target/x86_64-unknown-linux-gnu/release/glowing-tribble .
         zip -r x86_64-unknown-linux-gnu.zip ./glowing-tribble ./assets ./config
-        mv ./target/x86_64-pc-windows-gnu/release/glowing-tribble.exe
+
+    - name: Failsafe - Zip Linux Package with target  
+      if: steps.mvLinux.outcome == 'failure'
+      run: zip -r x86_64-unknown-linux-gnu.zip ./target ./assets ./config
+
+    # - name: Zip binaries with assets
+    - name: Move & Zip Windows Binaries
+      id: mvWindows
+      continue-on-error: true
+      run: | 
+        mv ./target/x86_64-pc-windows-gnu/release/glowing-tribble.exe .
         zip -r x86_64-pc-windows-gnu.zip ./glowing-tribble.exe ./assets ./config
 
+    - name: Failsafe - Zip Windows Package with target  
+      if: steps.mvWindows.outcome == 'failure'
+      run: zip -r x86_64-pc-windows-gnu.zip ./target ./assets ./config
+      
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
