@@ -44,7 +44,7 @@ jobs:
       #     ./target/x86_64-pc-windows-gnu
       #   key: ${{ runner.os }}-cargo-${{ hashFiles( '**/Cargo.lock' ) }}
 
-    - run: echo "Cache hit: ${{ steps.cache.outputs[ 'cache-hit' ] }}"
+    - run: echo Cache hit? ${{ steps.cache.outputs[ "cache-hit" ] }}
 
     - run: cargo install cross
     
