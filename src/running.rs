@@ -1,20 +1,41 @@
-
+use amethyst::{GameDataBuilder, StateEvent, assets::{HotReloadBundle, HotReloadStrategy}, audio::AudioBundle, input::InputBundle, renderer::{RenderBase3D, RenderDebugLines, RenderSkybox, bundle::Target, palette::Srgb, pass::FlatPassDef}, ui::{RenderUi, UiBundle}, utils::fps_counter::FpsCounterBundle, window::DisplayConfig};
+#[ allow(unused_imports)]
 use amethyst::{
-  prelude::*,
-  renderer::{
-    plugins::{ RenderFlat2D, RenderToWindow },
-    types::DefaultBackend,
-    RenderingBundle
+  animation::{
+      get_animation_set, AnimationBundle, AnimationCommand, AnimationControlSet, AnimationSet,
+      AnimationSetPrefab, EndControl,
   },
-  core::transform::TransformBundle,
+  assets::{PrefabData, PrefabLoader, PrefabLoaderSystemDesc, ProgressCounter, RonFormat},
+  core::transform::{Transform, TransformBundle},
+  derive::PrefabData,
+  ecs::{prelude::{Entity, DispatcherBuilder}, Entities, Join, ReadStorage, WriteStorage},
   error::Error,
-  input::{ InputBundle, StringBindings },
-  ui::{ RenderUi, UiBundle },
-  
+  prelude::{Builder, World, WorldExt},
+  renderer::{
+      camera::Camera,
+      plugins::{RenderFlat2D, RenderToWindow},
+      rendy::hal::command::ClearColor,
+      sprite::{prefab::SpriteScenePrefab, SpriteRender},
+      types::DefaultBackend,
+      RenderingBundle,
+  },
+  utils::application_root_dir,
+  window::ScreenDimensions,
+  Application, GameData, SimpleState, SimpleTrans, StateData, Trans,
 };
 
+#[ path = "impl/states/combat.rs" ]
+mod state_mod;
+use state_mod::CombatState as initState;
 
-pub fn run(){
+#[ path = "impl/bindingTypes/input.rs" ]
+mod input;
+
+#[ path = "struct/PrefabData.rs" ]
+mod custom_prefab_data;
+use custom_prefab_data::CustomPrefabData;
+
+pub fn run() -> amethyst::CoreApplication< 'static, GameData<'static, 'static>, StateEvent > {
 
   log::info!( "ok app setup start" );
 
@@ -29,61 +50,87 @@ pub fn run(){
   };
 
   let asset_dir = app_root.join( "assets" );
-  let config_dir = app_root.join( "config" );
+  // let config_dir = app_root.join( "config" );
 
-  let game_data = (|| -> GameDataBuilder {
+  let game_data = {
 
-    type BINDINGS = StringBindings;
-
-    let rendering_bundle = (|| -> RenderingBundle< DefaultBackend > {
+    match (|| -> Result< GameDataBuilder, amethyst::Error > {
   
-      let window_plugin = match RenderToWindow::from_config_path( app_root.join( "config" ).join( "display.ron" ) ) {
-        Ok( plugin ) => plugin,
-        Err( error ) => {
-
-          log::warn!( "Failed RenderToWindow from_config_path with: {}", error );
-
-          RenderToWindow::from_config( amethyst::window::DisplayConfig::default() )
-        },
-      }.with_clear([ 0.0, 0.0, 0.0, 1.0 ]);
       
-      RenderingBundle::< DefaultBackend >::new()
-      .with_plugin( RenderUi::default() )
-      .with_plugin( window_plugin )
-      .with_plugin( RenderFlat2D::default() )
-    })();
-
-    let input_bundle = match InputBundle::< BINDINGS >::new().with_bindings_from_file( config_dir.join( "bindings.ron" ) ) {
-      Ok( bundle ) => bundle,
-      Err( error ) => panic!( "Failed InputBundle with_bindings_from_file with: {}", error ),
-    };
-
-    let game_data_builder = match (|| -> Result< GameDataBuilder, Error > {
       GameDataBuilder::default()
+      .with_system_desc(
+        PrefabLoaderSystemDesc::<CustomPrefabData>::default(),
+        "scene_loader",
+        &[]
+      )
+      // https://docs-src.amethyst.rs/master/amethyst_core/transform/index.html
       .with_bundle( TransformBundle::new() )?
-      .with_bundle( input_bundle )?
-      .with_bundle( UiBundle::< BINDINGS >::new() )?
-      .with_bundle( rendering_bundle )
+      // https://docs.amethyst.rs/stable/amethyst_animation/struct.AnimationBundle.html
+      .with_bundle( AnimationBundle::< (), Transform >::new(
+        "animation_control_system",
+        "sampler_interpolation_system",) )?
+      // https://docs.amethyst.rs/stable/amethyst_assets/index.html
+      .with_bundle( HotReloadBundle::new( HotReloadStrategy::every( 2 ) ) )?
+      // https://docs.amethyst.rs/stable/amethyst_audio/struct.AudioBundle.html
+      .with_bundle( AudioBundle::default() )?
+      // https://docs.amethyst.rs/stable/amethyst_input/index.html
+      .with_bundle( InputBundle::< input::InputBindingTypes >::new() )?
+      // https://docs.amethyst.rs/stable/amethyst_rendy/index.html
+      .with_bundle( { RenderingBundle::< DefaultBackend >::new()
+        .with_plugin( { RenderDebugLines::default()
+          .with_target( Target::Main ) } )
+        .with_plugin( { RenderUi::default()
+          .with_target( Target::Main ) } )
+        .with_plugin( { RenderFlat2D::default()
+          .with_target( Target::Main ) } )
+        .with_plugin( { RenderSkybox::with_colors( 
+          Srgb::new( 1.0, 1.0, 1.0 ), 
+          Srgb::new( 0.0, 0.0, 0.0) ) 
+          .with_target( Target::Main ) } )
+        //https://docs.amethyst.rs/stable/amethyst_window/index.html
+        .with_plugin( { RenderToWindow::from_config( DisplayConfig {
+          title: String::from("Glowing Tribble"),
+          fullscreen: None,
+          dimensions: None,
+          min_dimensions: None,
+          max_dimensions: None,
+          visibility: true,
+          icon: None,
+          always_on_top: false,
+          decorations: true,
+          maximized: true,
+          multitouch: false,
+          resizable: true,
+          transparent: false,
+          loaded_icon: None,
+          } )
+          .with_target( Target::Main )
+          .with_clear([ 1.0, 1.0, 1.0, 1.0 ])
+        } )
+        .with_plugin( { RenderBase3D::<FlatPassDef>::default() 
+          .with_target( Target::Main ) } ) } )?
+      // https://docs.amethyst.rs/stable/amethyst_ui/struct.UiBundle.html
+      .with_bundle( UiBundle::< input::InputBindingTypes >::new() )? // Will fail with error 'No resource with the given id' if the InputBundle is not added.
+      // https://docs.amethyst.rs/stable/amethyst_utils/fps_counter/index.html
+      .with_bundle( FpsCounterBundle )
     })() {
       Ok( game_data_builder ) => game_data_builder,
       Err( error ) => panic!( "Failed GameDataBuilder with_bundle with: {}", error ),
-    }; 
+    }
+  };
 
-    game_data_builder.with( super::systems::PaddleSystem, "paddle_system", &[ "input_system" ] )
-    .with( super::systems::BallSystem, "ball_system", &[] )
-    .with( super::systems::CollisionSystem, "collision_system", &[ "paddle_system", "ball_system"]) 
-    .with( super::systems::WinningSystem, "winning_system", &[ "ball_system" ])
-  })();
-
-  log::info!( "ok" );
-
-  match Application::new( 
+  match amethyst::Application::new( // ::<input::InputBindingTypes> ?
     asset_dir, 
-    super::game::Game::default(), 
+    initState::default(), 
     game_data 
   ) {
     Err( error ) => panic!( "Application::new failed with: {}", error ),
-    Ok( mut application ) => application.run(),
-  }; 
+    Ok( mut application ) => { 
+
+      application.run();
+
+      application
+    },
+  } 
 
 } 

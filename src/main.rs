@@ -1,13 +1,14 @@
-mod game;
-mod systems;
 mod logging;
 mod running;
+mod testing;
 
 fn main() -> amethyst::Result<()> {
 
   logging::run();
   
-  running::run();
+  let application = running::run();
+
+  testing::run( application );
   
   Ok(())
 }

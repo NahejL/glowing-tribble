@@ -1,0 +1,25 @@
+#![enable(implicit_some)]
+Container (
+  transform: (
+    id: "background",
+    anchor: Middle,
+    stretch: XY( x_margin: 0.0, y_margin: 0.0, keep_aspect_ratio: false ),
+  ),
+  background: SolidColor( 0.1, 0.2, 0.3, 1.0 ),
+  children: [
+    Label (
+      transform: (
+        anchor: Middle,
+      ),
+      text: (
+        text: "Loading Stuff",
+        font: File( "fonts/square.ttf", ( "TTF", () ) ),
+        font_size: 25.,
+        size: (400., 200.),
+        text_color: ( 1., 1., 1., 0.5 ),
+        color: ( 0., 0., 0., 1.),
+        align: Middle,
+      )
+    )
+  ]
+)

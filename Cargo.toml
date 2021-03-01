@@ -5,16 +5,14 @@ authors = ["Nahej Lefebvre <nahejlefebvre@gmail.com>", "Daniel", "Amethyst Found
 edition = "2018"
 
 [dependencies]
-amethyst = {version = "0.15.2", features = ["no-slow-safety-checks"]}
+amethyst = { version = "0.15.3", features = ["no-slow-safety-checks"]}
 log = { version = "0.4.8", features = ["serde"] }
+serde = { version = "1.0.123", features = ["derive"] }
+deno_core = { version = "0.80.0" }
+# some_macro = { path = "crates/macros" }
 
 [features]
 default = ["vulkan"]
 empty = ["amethyst/empty"]
 metal = ["amethyst/metal"]
 vulkan = ["amethyst/vulkan"]
-
-# [target.x86_64-pc-windows-gnu]
-# linker = "x86_64-w64-mingw32-gcc"
-# ar = "x86_64-w64-mingw32-gcc-ar"
-# cargo build --target=x86_64-pc-windows-gnu
